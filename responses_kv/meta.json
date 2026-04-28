@@ -1,0 +1,17 @@
+{
+  "model": "llama3.1:8b",
+  "runs": 10,
+  "seed": 42,
+  "timeout": 600,
+  "fixed_options": {
+    "temperature": 0.0,
+    "top_k": 1,
+    "top_p": 1.0,
+    "repeat_penalty": 1.0,
+    "num_predict": 4096,
+    "num_ctx": 8192
+  },
+  "prompt": "Write a complete Python implementation of a simple key-value store \nwith the following features:\n- In-memory storage with optional persistence to a JSON file\n- Support for set, get, delete, list-keys, and exists operations\n- TTL (time-to-live) support per key, with automatic expiry\n- A simple CLI interface using argparse\n- Transaction support (begin, commit, rollback)\n- Full type hints throughout\n- A complete suite of unit tests using unittest\n\nOutput only the code, no explanation.",
+  "prompt_source": "/Users/alan/Projects/test-non-determinism/prompt_kvstore.txt",
+  "started": "2026-04-28T06:50:07.267311"
+}

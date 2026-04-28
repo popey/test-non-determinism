@@ -1,0 +1,11 @@
+Write a complete Python implementation of a simple key-value store 
+with the following features:
+- In-memory storage with optional persistence to a JSON file
+- Support for set, get, delete, list-keys, and exists operations
+- TTL (time-to-live) support per key, with automatic expiry
+- A simple CLI interface using argparse
+- Transaction support (begin, commit, rollback)
+- Full type hints throughout
+- A complete suite of unit tests using unittest
+
+Output only the code, no explanation.

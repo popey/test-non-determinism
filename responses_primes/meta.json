@@ -1,0 +1,8 @@
+{
+  "model": "llama3.1:8b",
+  "runs": 10,
+  "temperature": 0.0,
+  "seed": 42,
+  "prompt": "Can you write a python program to calculate prime numbers up to 100000, and print the results as a markdown table. Output ONLY the code with no explanation or surrounding text.",
+  "started": "2026-04-28T05:47:30.013169"
+}

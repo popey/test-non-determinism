@@ -1,0 +1,125 @@
+```python
+import argparse
+import json
+import os
+import time
+from typing import Dict, List, Optional, Tuple
+
+class KeyValueStore:
+    def __init__(self, filename: Optional[str] = None):
+        self.store: Dict[str, Tuple[str, int]] = {}
+        self.filename = filename
+        if filename:
+            self.load()
+
+    def load(self):
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r') as f:
+                self.store = json.load(f)
+
+    def save(self):
+        if self.filename:
+            with open(self.filename, 'w') as f:
+                json.dump(self.store, f)
+
+    def set(self, key: str, value: str, ttl: Optional[int] = None):
+        if ttl is not None:
+            self.store[key] = (value, time.time() + ttl)
+        else:
+            self.store[key] = (value, 0)
+
+    def get(self, key: str) -> Optional[str]:
+        if key in self.store:
+            value, expiry = self.store[key]
+            if expiry > time.time():
+                return value
+            else:
+                del self.store[key]
+                self.save()
+                return None
+        return None
+
+    def delete(self, key: str):
+        if key in self.store:
+            del self.store[key]
+            self.save()
+
+    def list_keys(self) -> List[str]:
+        return list(self.store.keys())
+
+    def exists(self, key: str) -> bool:
+        return key in self.store
+
+    def begin(self):
+        self.store = self.store.copy()
+
+    def commit(self):
+        self.save()
+
+    def rollback(self):
+        self.store = self.store.copy()
+
+class CLI:
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description='Simple key-value store CLI')
+        self.subparsers = self.parser.add_subparsers(dest='command')
+
+        self.set_parser = self.subparsers.add_parser('set', help='Set a key-value pair')
+        self.set_parser.add_argument('--ttl', type=int, help='Time-to-live in seconds')
+        self.set_parser.add_argument('--filename', help='Filename to save to')
+
+        self.get_parser = self.subparsers.add_parser('get', help='Get a value by key')
+        self.get_parser.add_argument('--filename', help='Filename to load from')
+
+        self.delete_parser = self.subparsers.add_parser('delete', help='Delete a key-value pair')
+        self.delete_parser.add_argument('--filename', help='Filename to load from')
+
+        self.list_parser = self.subparsers.add_parser('list', help='List all keys')
+        self.list_parser.add_argument('--filename', help='Filename to load from')
+
+        self.exists_parser = self.subparsers.add_parser('exists', help='Check if a key exists')
+        self.exists_parser.add_argument('--filename', help='Filename to load from')
+
+        self.begin_parser = self.subparsers.add_parser('begin', help='Begin a transaction')
+        self.begin_parser.add_argument('--filename', help='Filename to load from')
+
+        self.commit_parser = self.subparsers.add_parser('commit', help='Commit a transaction')
+        self.commit_parser.add_argument('--filename', help='Filename to save to')
+
+        self.rollback_parser = self.subparsers.add_parser('rollback', help='Rollback a transaction')
+        self.rollback_parser.add_argument('--filename', help='Filename to load from')
+
+    def parse_args(self):
+        return self.parser.parse_args()
+
+    def run(self):
+        args = self.parse_args()
+        store = KeyValueStore(args.filename)
+
+        if args.command == 'set':
+            store.set(args.key, args.value, args.ttl)
+            store.save()
+        elif args.command == 'get':
+            print(store.get(args.key))
+        elif args.command == 'delete':
+            store.delete(args.key)
+            store.save()
+        elif args.command == 'list':
+            print(store.list_keys())
+        elif args.command == 'exists':
+            print(store.exists(args.key))
+        elif args.command == 'begin':
+            store.begin()
+        elif args.command == 'commit':
+            store.commit()
+            store.save()
+        elif args.command == 'rollback':
+            store.rollback()
+
+def main():
+    cli = CLI()
+    cli.run()
+
+if __name__ == '__main__':
+    main()
+```
