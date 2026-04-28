@@ -16,6 +16,34 @@ instance N times, saving each response to its own folder. It pins every
 relevant sampling parameter and sends a warmup request first to ensure the
 model is fully loaded before collection begins.
 
+### Example Collection
+
+```bash
+$ python collect.py --model llama3.1:8b --runs 5 \
+  --prompt-file prompt_primes.txt \
+  --output-dir ./responses_primes \
+  --timeout 600
+Model:       llama3.1:8b
+Runs:        5
+Temperature: 0.0 (top_k=1, greedy)
+Seed:        42
+Timeout:     600s
+Prompt:      /Users/alan/Projects/test-non-determinism/prompt_primes.txt
+Output:      ./responses_primes
+──────────────────────────────────────────────────
+Warming up (loading model)... done in 2.2s
+──────────────────────────────────────────────────
+[    1/5]  12.0s this run | avg  12.0s | ~0.8min remaining
+[    2/5]  11.9s this run | avg  12.0s | ~0.6min remaining
+[    3/5]  11.6s this run | avg  11.9s | ~0.4min remaining
+[    4/5]  11.6s this run | avg  11.8s | ~0.2min remaining
+[    5/5]  11.7s this run | avg  11.8s | ~0.0min remaining
+──────────────────────────────────────────────────
+Done. Responses saved to: ./responses_primes
+Total time: 1.0 minutes
+Now run:  python analyse.py --input-dir ./responses_primes
+```
+
 `analyse.py` fingerprints the saved responses three ways:
 
 - **Exact** — byte-for-byte SHA-256 hash
@@ -24,6 +52,60 @@ model is fully loaded before collection begins.
 
 It then reports how many unique variants were produced, with a histogram and
 percentage breakdown.
+
+### Example Analysis
+
+```bash
+$ python analyse.py --input-dir ./responses_primes --show-diff
+
+Run info:
+  Model:       llama3.1:8b
+  Temperature: 0.0
+  Seed:        42
+  Started:     2026-04-28T05:47:30.013169
+  Prompt:      Can you write a python program to calculate prime numbers up to 100000, and prin...
+
+════════════════════════════════════════════════════════════
+  EXACT match (byte-for-byte identical)
+════════════════════════════════════════════════════════════
+  Total runs:    10
+  Unique hashes: 1
+  Deterministic: YES ✓
+
+  Hash                Count       %  Distribution
+  ────────────────── ──────  ──────  ────────────────────────────────────────
+  38f907f128baa5a8       10  100.0%  ████████████████████████████████████████
+
+════════════════════════════════════════════════════════════
+  NORMALISED match (whitespace-insensitive)
+════════════════════════════════════════════════════════════
+  Total runs:    10
+  Unique hashes: 1
+  Deterministic: YES ✓
+
+  Hash                Count       %  Distribution
+  ────────────────── ──────  ──────  ────────────────────────────────────────
+  01c8fb24931eddbd       10  100.0%  ████████████████████████████████████████
+
+════════════════════════════════════════════════════════════
+  CODE BLOCK match (prose stripped)
+════════════════════════════════════════════════════════════
+  Total runs:    10
+  Unique hashes: 1
+  Deterministic: YES ✓
+
+  Hash                Count       %  Distribution
+  ────────────────── ──────  ──────  ────────────────────────────────────────
+  c8243348eec9cdd4       10  100.0%  ████████████████████████████████████████
+
+════════════════════════════════════════════════════════════
+  Response length (characters)
+════════════════════════════════════════════════════════════
+  Min:    381
+  Max:    381
+  Mean:   381
+  Range:  0  (identical lengths)
+```
 
 ## Requirements
 
